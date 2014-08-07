@@ -1,0 +1,13 @@
+﻿{
+    "dependencies": {
+        "Newtonsoft.Json": "5.0.8"
+    },
+    "frameworks": {
+        "net45": {
+            "dependencies": {
+                "System.Xml": "",
+                "System.Xml.Linq": ""
+            }
+        }
+    }
+}
