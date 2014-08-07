@@ -35,7 +35,6 @@
     <Compile Include="FrameworkReferenceResolver.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="NuGet.Config" />
     <Content Include="project.json" />
   </ItemGroup>
   <Import Project="$(VSToolsPath)\AspNet\Microsoft.Web.AspNet.targets" Condition="'$(VSToolsPath)' != ''" />

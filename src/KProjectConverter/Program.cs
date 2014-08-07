@@ -11,7 +11,7 @@ namespace KProjectConverter
 
         public static void Main(string[] args)
         {
-            var dirPath = @"C:\Development Next\Profit\ran01355-owin-vnext-support\runtime";//args[0];
+            var dirPath = args.Length == 1 ? args[0] : @"C:\Development Next\Profit\ran01355-owin-vnext-support\runtime";
 
             var projects = new List<ProjectInfo>();
             FindConvertableProjects(dirPath, projects);
