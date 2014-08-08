@@ -95,7 +95,7 @@ namespace KProjectConverter
             }
 
             var projectPath = Path.Combine(Path.GetDirectoryName(_project.ProjectFilePath), "project.json");
-            //File.WriteAllText(projectPath, projectJson.ToString());
+            File.WriteAllText(projectPath, projectJson.ToString());
         }
     }
 }

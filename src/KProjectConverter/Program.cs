@@ -8,10 +8,9 @@ namespace KProjectConverter
 {
     public class Program
     {
-
         public static void Main(string[] args)
         {
-            var dirPath = args.Length == 1 ? args[0] : @"C:\Development Next\Profit\ran01355-owin-vnext-support\runtime";
+            var dirPath = args.Length == 1 ? args[0] : @"C:\Development Next\Profit\ran01355-owin-vnext-support - Copy\runtime";
 
             var projects = new List<ProjectInfo>();
             FindConvertableProjects(dirPath, projects);
@@ -24,11 +23,16 @@ namespace KProjectConverter
 
             var foundProjectReferences = new HashSet<string>(projects.Select(p => p.AsmName), StringComparer.OrdinalIgnoreCase);
 
-            //KGlobal.BuildGlobalJson(projects, dirPath);
+            KGlobal.BuildGlobalJson(projects, dirPath);
+            KGlobal.BuildNuGetConfig(dirPath);
+
             foreach (var project in projects)
             {
+                //TODO Get and write version, description and authors to ProjectJson
+
                 var kproj = new KProject(project, foundProjectReferences);
                 kproj.BuildProjectJson();
+                kproj.BackupOldProjectFiles();
             }
 
             PrintProjectInfo(projects);
@@ -36,6 +40,7 @@ namespace KProjectConverter
 
         private static void PrintProjectInfo(List<ProjectInfo> projects)
         {
+            var standardColor = Console.ForegroundColor;
             foreach (var project in projects)
             {
                 if(project.Errors.Count == 0)
@@ -44,16 +49,20 @@ namespace KProjectConverter
                 }
 
                 Console.WriteLine(string.Format(". {0}", project.ProjectFilePath));
+                Console.ForegroundColor = ConsoleColor.Red;
                 foreach (var error in project.Errors)
                 {
                     Console.WriteLine(string.Format("! {0}", error));
                 }
+
+                Console.ForegroundColor = ConsoleColor.Yellow;
                 foreach (var warning in project.Warnings)
                 {
                     Console.WriteLine(string.Format("? {0}", warning));
                 }
                 Console.WriteLine();
             }
+            Console.ForegroundColor = standardColor;
 
             Console.WriteLine();
         }

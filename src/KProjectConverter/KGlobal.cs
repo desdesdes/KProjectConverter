@@ -40,5 +40,14 @@ namespace KProjectConverter
 
             return paths.ToArray();
         }
+
+        public static void BuildNuGetConfig(string dirPath)
+        {
+            var stream = System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceStream("embed/NuGet.Config");
+            using (var fileStream = new FileStream(Path.Combine(dirPath, "NuGet.Config"), FileMode.Create, FileAccess.Write))
+            {
+                stream.CopyTo(fileStream);
+            }
+        }
     }
 }
