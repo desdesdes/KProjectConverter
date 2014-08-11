@@ -27,10 +27,10 @@ namespace KProjectConverter
             }
         }
 
-        public void BackupOldProjectFiles()
+        public void DeleteOldProjectFiles()
         {
-            MakeBackup(_project.ProjectFilePath);
-            MakeBackup(string.Format("{0}.vspscc", _project.ProjectFilePath));
+            File.Delete(_project.ProjectFilePath);
+            File.Delete(string.Format("{0}.vspscc", _project.ProjectFilePath));
         }
 
         private static string GetProjectNameFromReference(string reference)

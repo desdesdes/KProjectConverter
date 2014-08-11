@@ -41,10 +41,18 @@ namespace KProjectConverter
             return paths.ToArray();
         }
 
-        public static void BuildNuGetConfig(string dirPath)
+        public static void WriteStandardKFiles(string dirPath)
         {
-            var stream = System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceStream("embed/NuGet.Config");
-            using (var fileStream = new FileStream(Path.Combine(dirPath, "NuGet.Config"), FileMode.Create, FileAccess.Write))
+            WriteResourceFile("embed/NuGet.Config", Path.Combine(dirPath, "NuGet.Config"));
+            WriteResourceFile("embed/build.cmd", Path.Combine(dirPath, "build.cmd"));
+            WriteResourceFile("embed/build.sh", Path.Combine(dirPath, "build.sh"));
+            WriteResourceFile("embed/makefile.shade", Path.Combine(dirPath, "makefile.shade"));
+        }
+
+        private static void WriteResourceFile(string resourceName, string filePath)
+        {
+            var stream = System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceStream(resourceName);
+            using (var fileStream = new FileStream(filePath, FileMode.Create, FileAccess.Write))
             {
                 stream.CopyTo(fileStream);
             }

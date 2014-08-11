@@ -1,6 +1,6 @@
-﻿using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 
@@ -10,32 +10,53 @@ namespace KProjectConverter
     {
         public static void Main(string[] args)
         {
-            var dirPath = args.Length == 1 ? args[0] : @"C:\Development Next\Profit\ran01355-owin-vnext-support - Copy\runtime";
+            var options = new Options();
+            options.LoadFromCommandLineArgs(args);
 
             var projects = new List<ProjectInfo>();
-            FindConvertableProjects(dirPath, projects);
+            FindConvertableProjects(options.RootDirectory, projects);
 
-            if(projects.Any(p => p.Errors.Count > 0))
+            // Quit now if conversion is not wanted, just display info
+            if(!options.Convert)
             {
                 PrintProjectInfo(projects);
+                WaitWhenRunningInDebugger();
+                return;
+            }
+
+            // If there are any errors quit conversion and display info
+            if (projects.Any(p => p.Errors.Count > 0))
+            {
+                PrintProjectInfo(projects);
+
+                Console.WriteLine("Conversion cancelled because of errors!");
+                WaitWhenRunningInDebugger();
                 return;
             }
 
             var foundProjectReferences = new HashSet<string>(projects.Select(p => p.AsmName), StringComparer.OrdinalIgnoreCase);
 
-            KGlobal.BuildGlobalJson(projects, dirPath);
-            KGlobal.BuildNuGetConfig(dirPath);
+            KGlobal.WriteStandardKFiles(options.RootDirectory);
+            KGlobal.BuildGlobalJson(projects, options.RootDirectory);
 
             foreach (var project in projects)
             {
-                //TODO Get and write version, description and authors to ProjectJson
-
                 var kproj = new KProject(project, foundProjectReferences);
                 kproj.BuildProjectJson();
-                kproj.BackupOldProjectFiles();
+                kproj.DeleteOldProjectFiles();
             }
 
             PrintProjectInfo(projects);
+            WaitWhenRunningInDebugger();
+        }
+
+        private static void WaitWhenRunningInDebugger()
+        {
+            if (Debugger.IsAttached)
+            {
+                Console.WriteLine("Press a key to close.");
+                Console.ReadKey();
+            }
         }
 
         private static void PrintProjectInfo(List<ProjectInfo> projects)
@@ -43,26 +64,23 @@ namespace KProjectConverter
             var standardColor = Console.ForegroundColor;
             foreach (var project in projects)
             {
-                if(project.Errors.Count == 0)
-                {
-                    continue;
-                }
-
                 Console.WriteLine(string.Format(". {0}", project.ProjectFilePath));
                 Console.ForegroundColor = ConsoleColor.Red;
                 foreach (var error in project.Errors)
                 {
                     Console.WriteLine(string.Format("! {0}", error));
                 }
+                Console.ForegroundColor = standardColor;
 
                 Console.ForegroundColor = ConsoleColor.Yellow;
                 foreach (var warning in project.Warnings)
                 {
                     Console.WriteLine(string.Format("? {0}", warning));
                 }
+                Console.ForegroundColor = standardColor;
+
                 Console.WriteLine();
             }
-            Console.ForegroundColor = standardColor;
 
             Console.WriteLine();
         }
@@ -105,6 +123,7 @@ namespace KProjectConverter
                 projectChecker.CheckAssemblyNameAndDirectoryName();
                 projectChecker.LoadReferences();
                 projectChecker.LoadPackages();
+                projectChecker.CheckAssemblyInfoFile();
             }
         }
     }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Xml.Linq;
 
 namespace KProjectConverter
@@ -60,6 +61,46 @@ namespace KProjectConverter
                 dep.Version = package.Attribute("version").Value;
                 _project.Packages.Add(dep);
             }
+        }
+
+        public void CheckAssemblyInfoFile()
+        {
+            var projectRootDirPath = Path.GetDirectoryName(_project.ProjectFilePath);
+            var assemblyInfoFiles = Directory.GetFiles(projectRootDirPath, "AssemblyInfo.cs", SearchOption.AllDirectories);
+
+            if(assemblyInfoFiles.Length > 0)
+            {
+                _project.Warnings.Add(string.Format("{0} AssemblyInfo.cs files found, review this file.", assemblyInfoFiles.Length));
+            }
+
+            foreach (var assemblyInfoFilePath in assemblyInfoFiles)
+            {
+                var version = GetAssemblyFileVersion(assemblyInfoFilePath);
+                if(version != null)
+                {
+                    _project.Warnings.Add(string.Format("AssemblyFileVersion '{0}' is defined in '{1}', remove and set this in project.json", version, assemblyInfoFilePath.Substring(projectRootDirPath.Length)));
+                }
+            }
+        }
+
+        private static string GetAssemblyFileVersion(string assemblyInfoFilePath)
+        {
+            var streamreaderAssemblyInfo = new StreamReader(assemblyInfoFilePath);
+            string strLine;
+            while ((strLine = streamreaderAssemblyInfo.ReadLine()) != null)
+            {
+                var matchVersion = Regex.Match(strLine, @"(?:AssemblyFileVersion\("")(?<ver>(\d*)\.(\d*)(\.(\d*)(\.(\d*))?)?)(?:""\))", RegexOptions.IgnoreCase | RegexOptions.IgnorePatternWhitespace | RegexOptions.Singleline | RegexOptions.ExplicitCapture);
+                if (matchVersion.Success)
+                {
+                    var groupVersion = matchVersion.Groups["ver"];
+                    if ((groupVersion.Success) && (!String.IsNullOrEmpty(groupVersion.Value)))
+                    {
+                        return groupVersion.Value;
+                    }
+                }
+            }
+
+            return null;
         }
     }
 }
