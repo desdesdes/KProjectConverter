@@ -1,2 +1,6 @@
+var VERSION='0.1'
+var FULL_VERSION='0.1'
+var AUTHORS='Bart Vries'
+
 use-standard-lifecycle
 k-standard-goals
