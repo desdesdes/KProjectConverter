@@ -28,22 +28,5 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <CommandLineArguments>"C:\Development Next\Profit\ran01355-owin-vnext-support - Copy\runtime"</CommandLineArguments>
   </PropertyGroup>
-  <ItemGroup>
-    <Compile Include="KGlobal.cs" />
-    <Compile Include="KProject.cs" />
-    <Compile Include="Options.cs" />
-    <Compile Include="PackageDependency.cs" />
-    <Compile Include="Program.cs" />
-    <Compile Include="ProjectChecker.cs" />
-    <Compile Include="ProjectInfo.cs" />
-    <Compile Include="FrameworkReferenceResolver.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="embed\build.cmd" />
-    <Content Include="embed\build.sh" />
-    <Content Include="embed\makefile.shade" />
-    <Content Include="embed\NuGet.Config" />
-    <Content Include="project.json" />
-  </ItemGroup>
   <Import Project="$(VSToolsPath)\AspNet\Microsoft.Web.AspNet.targets" Condition="'$(VSToolsPath)' != ''" />
 </Project>
