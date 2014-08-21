@@ -20,7 +20,7 @@ namespace KProjectConverter
                 return;
             }
 
-            if(args.Length > 1)
+            if(args.Length == 0)
             {
                 throw new Exception("First command line arg must be the path to process.");
             }
