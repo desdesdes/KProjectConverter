@@ -1,17 +1,17 @@
 ﻿{
-    "version": "0.1.0-*",
-    "authors": ["Bart Vries"],
-    "description": "Converts a folder of csproj to kproj, reporting errors and warnings.", 
-    "dependencies": {
-        "Newtonsoft.Json": "5.0.8"
-    },
-    "frameworks": {
-        "net45": {
-            "dependencies": {
-                "System.Xml": "",
-                "System.Xml.Linq": ""
-            }
-        }
-    },
-    "resources": "embed/**/*.*"
+  "version": "0.1.0-*",
+  "authors": [ "Bart Vries" ],
+  "description": "Converts a folder of csproj to kproj, reporting errors and warnings.",
+  "dependencies": {
+    "Newtonsoft.Json": "5.0.8"
+  },
+  "frameworks": {
+    "net45": {
+      "dependencies": {
+        "System.Xml": "",
+        "System.Xml.Linq": ""
+      }
+    }
+  },
+  "resources": "embed/**/*.*"
 }

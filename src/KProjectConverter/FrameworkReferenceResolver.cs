@@ -3,12 +3,12 @@ using System.Collections.Generic;
 
 namespace KProjectConverter
 {
-    /// <summary>
-    /// Summary description for StandardNetDeps
-    /// </summary>
-    public static class FrameworkReferenceResolver
-    {
-        private static HashSet<string> _standardKReferences = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+  /// <summary>
+  /// Summary description for StandardNetDeps
+  /// </summary>
+  public static class FrameworkReferenceResolver
+  {
+    private static HashSet<string> _standardKReferences = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {
             "Microsoft.CSharp",
             "mscorlib",
@@ -16,9 +16,9 @@ namespace KProjectConverter
             "System.Core"
         };
 
-        // Found in C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.5.1
-        // Use dir *.dll /B > c:\test.log to get simple list
-        private static HashSet<string> _framework451References = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+    // Found in C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.5.1
+    // Use dir *.dll /B > c:\test.log to get simple list
+    private static HashSet<string> _framework451References = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {
             "Accessibility",
             "CustomMarshalers",
@@ -153,14 +153,14 @@ namespace KProjectConverter
             "XamlBuildTask"
         };
 
-        public static bool IsFrameworkReference(string package)
-        {
-            return _framework451References.Contains(package) ;
-        }
-
-        public static bool IsStandardKReference(string package)
-        {
-            return _standardKReferences.Contains(package);
-        }
+    public static bool IsFrameworkReference(string package)
+    {
+      return _framework451References.Contains(package);
     }
+
+    public static bool IsStandardKReference(string package)
+    {
+      return _standardKReferences.Contains(package);
+    }
+  }
 }
