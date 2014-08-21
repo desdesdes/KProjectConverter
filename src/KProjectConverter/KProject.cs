@@ -45,12 +45,18 @@ namespace KProjectConverter
       return reference.Substring(0, pos);
     }
 
-    public void BuildProjectJson()
+    public void BuildProjectJson(IEnumerable<KDependency> additionalDependencies)
     {
       var projectJson = new JObject();
 
       var packageSet = new HashSet<string>();
       var generalDependencies = new List<JProperty>();
+
+      foreach (var additionalDependency in additionalDependencies)
+      {
+        generalDependencies.Add(new JProperty(additionalDependency.Package, additionalDependency.Version));
+      }
+
       foreach (var package in _project.Packages)
       {
         generalDependencies.Add(new JProperty(package.Package, package.Version));
@@ -81,7 +87,6 @@ namespace KProjectConverter
             _project.Warnings.Add(string.Format("Possible resolvable reference to '{0}', check if this is part of a package", projectName));
           }
         }
-
       }
 
       projectJson.Add(new JProperty("dependencies", new JObject(generalDependencies)));
@@ -92,14 +97,6 @@ namespace KProjectConverter
 
       var projectPath = Path.Combine(Path.GetDirectoryName(_project.ProjectFilePath), "project.json");
       File.WriteAllText(projectPath, projectJson.ToString());
-    }
-
-    public void AddProjectReference(string projectReference)
-    {
-      if(!string.IsNullOrEmpty(projectReference))
-      {
-        _projectReferences.Add(projectReference);
-      }
     }
   }
 }

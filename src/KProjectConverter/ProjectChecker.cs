@@ -59,7 +59,7 @@ namespace KProjectConverter
 
       foreach (var package in packagesConfigXml.Elements("package"))
       {
-        var dep = new PackageDependency();
+        var dep = new KDependency();
         dep.Package = package.Attribute("id").Value;
         dep.Version = package.Attribute("version").Value;
         _project.Packages.Add(dep);

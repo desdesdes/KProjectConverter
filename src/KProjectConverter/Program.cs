@@ -13,14 +13,14 @@ namespace KProjectConverter
       var options = new Options();
       options.LoadFromCommandLineArgs(args);
 
-      var projects = new List<CSProject>();
-      FindConvertableProjects(options.RootDirectory, projects);
+      var csProjects = new List<CSProject>();
+      FindConvertableProjects(options.RootDirectory, csProjects);
 
       // Print info if error are found or conversion not needed
-      var hasErrors = projects.Any(p => p.Errors.Count > 0);
+      var hasErrors = csProjects.Any(p => p.Errors.Count > 0);
       if (hasErrors || !options.Convert)
       {
-        PrintProjectInfo(options, projects);
+        PrintProjectInfo(options, csProjects);
 
         if(hasErrors && options.Convert)
         {
@@ -35,21 +35,24 @@ namespace KProjectConverter
 
 
       KGlobal.WriteStandardKFiles(options.RootDirectory);
-      KGlobal.BuildGlobalJson(projects, options.RootDirectory);
+      KGlobal.BuildGlobalJson(csProjects, options.RootDirectory);
 
-
-
-      var foundProjectReferences = new HashSet<string>(projects.Select(p => p.AsmName), StringComparer.OrdinalIgnoreCase);
-      foreach (var project in projects)
+      // Add aditional Dependencies
+      var additonalDependencies = new List<KDependency>();
+      if(!string.IsNullOrEmpty(options.AddProjectReference))
       {
-        var kproj = new KProject(project, foundProjectReferences);
+        additonalDependencies.Add(new KDependency() { Package = options.AddProjectReference, Version = "" });
+      }
 
-        kproj.AddProjectReference(options.AddProjectReference);
-        kproj.BuildProjectJson();
+      var foundProjectReferences = new HashSet<string>(csProjects.Select(p => p.AsmName), StringComparer.OrdinalIgnoreCase);
+      foreach (var csProject in csProjects)
+      {
+        var kproj = new KProject(csProject, foundProjectReferences);
+        kproj.BuildProjectJson(additonalDependencies);
         kproj.DeleteOldProjectFiles();
       }
 
-      PrintProjectInfo(options, projects);
+      PrintProjectInfo(options, csProjects);
       WaitWhenRunningInDebugger();
     }
 
