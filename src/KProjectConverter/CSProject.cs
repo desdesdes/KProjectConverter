@@ -8,20 +8,9 @@ namespace KProjectConverter
   /// </summary>
   public class CSProject
   {
-    public CSProject()
-    {
-      Warnings = new List<string>();
-      Errors = new List<string>();
-      References = new HashSet<string>();
-      Packages = new List<KDependency>();
-    }
-
-    public string AsmName { get; set; }
-    public string Version { get; set; }
     public string ProjectFilePath { get; set; }
-    public List<string> Errors { get; private set; }
-    public HashSet<string> References { get; private set; }
-    public List<KDependency> Packages { get; private set; }
-    public List<string> Warnings { get; private set; }
+    public CSProjectInfo Info { get; set; }
+    public List<string> Errors { get; } = new List<string>();
+    public List<string> Warnings { get; } = new List<string>();
   }
 }

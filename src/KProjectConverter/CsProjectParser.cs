@@ -9,42 +9,48 @@ namespace KProjectConverter
   /// <summary>
   /// Summary description for ProjectChecker
   /// </summary>
-  public class ProjectChecker
+  public class CsProjectParser
   {
     private static XNamespace _msbuildNs = XNamespace.Get("http://schemas.microsoft.com/developer/msbuild/2003");
 
     CSProject _project;
     XElement _projectXml;
 
-    private ProjectChecker(CSProject project)
+    private CsProjectParser(CSProject project)
     {
       _project = project;
       _projectXml = XElement.Load(project.ProjectFilePath);
-      _project.AsmName = _projectXml.Elements(_msbuildNs + "PropertyGroup").Elements(_msbuildNs + "AssemblyName").Single().Value;
-      _project.Version = _projectXml.Elements(_msbuildNs + "PropertyGroup").Elements(_msbuildNs + "TargetFrameworkVersion").Single().Value;
+
+      var projectInfo = new CSProjectInfo();
+      projectInfo.AsmName = _projectXml.Elements(_msbuildNs + "PropertyGroup").Elements(_msbuildNs + "AssemblyName").Single().Value;
+      projectInfo.Version = _projectXml.Elements(_msbuildNs + "PropertyGroup").Elements(_msbuildNs + "TargetFrameworkVersion").Single().Value;
+      projectInfo.RootNamespace = _projectXml.Elements(_msbuildNs + "PropertyGroup").Elements(_msbuildNs + "RootNamespace").Single().Value;
+      projectInfo.ProjectGuid = Guid.Parse(_projectXml.Elements(_msbuildNs + "PropertyGroup").Elements(_msbuildNs + "ProjectGuid").Single().Value);
+
+      _project.Info = projectInfo;
     }
 
-    public static ProjectChecker LoadProject(CSProject project)
+    public static CsProjectParser LoadProject(CSProject project)
     {
-      return new ProjectChecker(project);
+      return new CsProjectParser(project);
     }
 
     public void CheckAssemblyNameAndDirectoryName()
     {
       var directoryName = Path.GetFileName(Path.GetDirectoryName(_project.ProjectFilePath));
-      if (!directoryName.Equals(_project.AsmName, StringComparison.OrdinalIgnoreCase))
+      if (!directoryName.Equals(_project.Info.AsmName, StringComparison.OrdinalIgnoreCase))
       {
-        _project.Errors.Add(string.Format("Assemblyname '{0}' does not match directory name '{1}'.", _project.AsmName, directoryName));
+        _project.Errors.Add(string.Format("Assemblyname '{0}' does not match directory name '{1}'.", _project.Info.AsmName, directoryName));
       }
     }
 
     public void LoadReferences()
     {
       var referenceGroups = _projectXml.Elements(_msbuildNs + "ItemGroup").Elements(_msbuildNs + "Reference");
-      _project.References.AddRange(referenceGroups.Attributes("Include").Select(i => i.Value));
+      _project.Info.References.AddRange(referenceGroups.Attributes("Include").Select(i => i.Value));
 
       var projectReferenceGroups = _projectXml.Elements(_msbuildNs + "ItemGroup").Elements(_msbuildNs + "ProjectReference");
-      _project.References.AddRange(projectReferenceGroups.Elements(_msbuildNs + "Name").Select(i => i.Value));
+      _project.Info.References.AddRange(projectReferenceGroups.Elements(_msbuildNs + "Name").Select(i => i.Value));
     }
 
     public void LoadPackages()
@@ -62,7 +68,15 @@ namespace KProjectConverter
         var dep = new KDependency();
         dep.Package = package.Attribute("id").Value;
         dep.Version = package.Attribute("version").Value;
-        _project.Packages.Add(dep);
+
+        if (_project.Info.Packages.Any(p => dep.Package.Equals(p.Package, StringComparison.OrdinalIgnoreCase)))
+        {
+          _project.Errors.Add(string.Format("Assemblyname '{0}' has references to multiple versions of the same package '{1}'.", _project.Info.AsmName, dep.Package));
+        }
+        else
+        {
+          _project.Info.Packages.Add(dep);
+        }
       }
     }
 

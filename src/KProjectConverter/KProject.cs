@@ -2,6 +2,8 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Xml.Linq;
 
 namespace KProjectConverter
 {
@@ -10,6 +12,7 @@ namespace KProjectConverter
   /// </summary>
   public class KProject
   {
+    private static XNamespace _msbuildNs = XNamespace.Get("http://schemas.microsoft.com/developer/msbuild/2003");
     CSProject _project;
     ISet<string> _projectReferences;
 
@@ -45,6 +48,18 @@ namespace KProjectConverter
       return reference.Substring(0, pos);
     }
 
+    public void BuildKproj()
+    {
+      var stream = System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceStream("embed/base.kproj");
+      var kprojXml = XElement.Load(stream);
+      var globalXml = kprojXml.Elements(_msbuildNs + "PropertyGroup").Single(e => e.Attribute("Label")?.Value?.Equals("Globals") == true);
+      globalXml.Element(_msbuildNs + "ProjectGuid").Value = _project.Info.ProjectGuid.ToString("D");
+      globalXml.Element(_msbuildNs + "RootNamespace").Value = _project.Info.RootNamespace;
+
+      var kprojectFilePath = Path.ChangeExtension(_project.ProjectFilePath, "kproj");
+      kprojXml.Save(kprojectFilePath);
+    }
+
     public void BuildProjectJson(IEnumerable<KDependency> additionalDependencies)
     {
       var projectJson = new JObject();
@@ -57,14 +72,14 @@ namespace KProjectConverter
         generalDependencies.Add(new JProperty(additionalDependency.Package, additionalDependency.Version));
       }
 
-      foreach (var package in _project.Packages)
+      foreach (var package in _project.Info.Packages)
       {
         generalDependencies.Add(new JProperty(package.Package, package.Version));
         packageSet.Add(package.Package);
       }
 
       var netDependencies = new List<JProperty>();
-      foreach (var reference in _project.References)
+      foreach (var reference in _project.Info.References)
       {
         if (FrameworkReferenceResolver.IsFrameworkReference(reference))
         {
@@ -92,7 +107,7 @@ namespace KProjectConverter
       projectJson.Add(new JProperty("dependencies", new JObject(generalDependencies)));
 
       // Build the project.json version specifier from csproj version specifier, example "v4.5.1" to "net451"
-      var version = _project.Version.Replace(".", "").Replace("v", "net");
+      var version = _project.Info.Version.Replace(".", "").Replace("v", "net");
       projectJson.Add(new JProperty("frameworks", new JObject(new JProperty(version, new JObject(new JProperty("dependencies", new JObject(netDependencies)))))));
 
       var projectPath = Path.Combine(Path.GetDirectoryName(_project.ProjectFilePath), "project.json");

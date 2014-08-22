@@ -11,7 +11,7 @@ namespace KProjectConverter
   /// </summary>
   public static class KGlobal
   {
-    public static void BuildGlobalJson(List<CSProject> projects, string rootDirPath)
+    public static void BuildGlobalJson(IEnumerable<CSProject> projects, string rootDirPath)
     {
       var projectSubDir = FindProjectPaths(projects, rootDirPath);
 
@@ -27,7 +27,7 @@ namespace KProjectConverter
       File.WriteAllText(Path.Combine(rootDirPath, "global.json"), globalJson.ToString());
     }
 
-    private static string[] FindProjectPaths(List<CSProject> projects, string rootDirPath)
+    private static string[] FindProjectPaths(IEnumerable<CSProject> projects, string rootDirPath)
     {
       var paths = new HashSet<string>();
       foreach (var project in projects)

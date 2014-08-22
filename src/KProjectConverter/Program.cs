@@ -13,8 +13,16 @@ namespace KProjectConverter
       var options = new Options();
       options.LoadFromCommandLineArgs(args);
 
-      var csProjects = new List<CSProject>();
-      FindConvertableProjects(options.RootDirectory, csProjects);
+      var csProjects = FindConvertableProjects(options.RootDirectory);
+
+      foreach (var project in csProjects)
+      {
+        var csProjectParser = CsProjectParser.LoadProject(project);
+        csProjectParser.CheckAssemblyNameAndDirectoryName();
+        csProjectParser.LoadReferences();
+        csProjectParser.LoadPackages();
+        csProjectParser.CheckCompileFiles();
+      }
 
       // Print info if error are found or conversion not needed
       var hasErrors = csProjects.Any(p => p.Errors.Count > 0);
@@ -44,10 +52,11 @@ namespace KProjectConverter
         additonalDependencies.Add(new KDependency() { Package = options.AddProjectReference, Version = "" });
       }
 
-      var foundProjectReferences = new HashSet<string>(csProjects.Select(p => p.AsmName), StringComparer.OrdinalIgnoreCase);
+      var foundProjectReferences = new HashSet<string>(csProjects.Select(p => p.Info.AsmName), StringComparer.OrdinalIgnoreCase);
       foreach (var csProject in csProjects)
       {
         var kproj = new KProject(csProject, foundProjectReferences);
+        kproj.BuildKproj();
         kproj.BuildProjectJson(additonalDependencies);
         kproj.DeleteOldProjectFiles();
       }
@@ -65,7 +74,7 @@ namespace KProjectConverter
       }
     }
 
-    private static void PrintProjectInfo(Options options, List<CSProject> projects)
+    private static void PrintProjectInfo(Options options, IEnumerable<CSProject> projects)
     {
       var standardColor = Console.ForegroundColor;
       foreach (var project in projects)
@@ -91,22 +100,20 @@ namespace KProjectConverter
       Console.WriteLine();
     }
 
-    private static void FindConvertableProjects(string dirPath, List<CSProject> projects)
+    private static IEnumerable<CSProject> FindConvertableProjects(string dirPath)
     {
       // process subdirs, add the sound projects to the list
       var projectsInSubDirs = new List<CSProject>();
       foreach (var subDirPath in Directory.GetDirectories(dirPath))
       {
-        FindConvertableProjects(subDirPath, projectsInSubDirs);
+        projectsInSubDirs.AddRange(FindConvertableProjects(subDirPath));
       }
-      projects.AddRange(projectsInSubDirs);
 
       // Find the project files in current directory
-      var projectInCurrentDirectory = Directory.GetFiles(dirPath, "*.csproj").Select(i => new CSProject() { ProjectFilePath = i }).ToArray();
-      projects.AddRange(projectInCurrentDirectory);
+      var projectInCurrentDirectory = Directory.GetFiles(dirPath, "*.csproj").Select(i => new CSProject() { ProjectFilePath = i }).ToList();
 
       // If subdir also contains projects then conversion will fail
-      if (projectsInSubDirs.Count > 0)
+      if (projectInCurrentDirectory.Count > 0 && projectsInSubDirs.Count > 0)
       {
         foreach (var project in projectInCurrentDirectory)
         {
@@ -115,22 +122,16 @@ namespace KProjectConverter
       }
 
       // If multiple projects in one folder then report error
-      if (projectInCurrentDirectory.Length > 1)
+      if (projectInCurrentDirectory.Count > 1)
       {
         foreach (var project in projectInCurrentDirectory)
         {
-          project.Errors.Add(string.Format("Project directory contains '{0}' projects, split projects in project per directory.", projectInCurrentDirectory.Length));
+          project.Errors.Add(string.Format("Project directory contains '{0}' projects, split projects in project per directory.", projectInCurrentDirectory.Count));
         }
       }
 
-      foreach (var project in projectInCurrentDirectory)
-      {
-        var projectChecker = ProjectChecker.LoadProject(project);
-        projectChecker.CheckAssemblyNameAndDirectoryName();
-        projectChecker.LoadReferences();
-        projectChecker.LoadPackages();
-        projectChecker.CheckCompileFiles();
-      }
+      projectsInSubDirs.AddRange(projectInCurrentDirectory);
+      return projectsInSubDirs;
     }
   }
 }
