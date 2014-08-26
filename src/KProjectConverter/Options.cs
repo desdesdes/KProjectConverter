@@ -12,6 +12,7 @@ namespace KProjectConverter
     public bool Convert { get; set; }
     public bool ShowHelp { get; set; }
     public string AddProjectReference { get; set; }
+    public string AddSources { get; set; }
 
     public void LoadFromCommandLineArgs(string[] args)
     {
@@ -30,6 +31,7 @@ namespace KProjectConverter
 
       Convert = CheckArg("c", args);
       AddProjectReference = GetArg("addref", args);
+      AddSources = GetArg("addsources", args);
     }
 
     private static bool CheckArg(string argToCheck, string[] args)

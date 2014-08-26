@@ -40,10 +40,8 @@ namespace KProjectConverter
       }
 
       // Start conversion
-
-
       KGlobal.WriteStandardKFiles(options.RootDirectory);
-      KGlobal.BuildGlobalJson(csProjects, options.RootDirectory);
+      KGlobal.BuildGlobalJson(csProjects, options.RootDirectory, options.AddSources);
 
       // Add aditional Dependencies
       var additonalDependencies = new List<KDependency>();
