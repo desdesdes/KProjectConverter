@@ -158,6 +158,17 @@ namespace KProjectConverter
       return _framework451References.Contains(package);
     }
 
+    public static string GetFrameworkReferenceCorrectCase(string package)
+    {
+      // MS.NET uses wrong casing for "System.Configuration", so correct it.
+      if (package.Equals("System.Configuration", StringComparison.OrdinalIgnoreCase))
+      {
+        return "System.Configuration";
+      }
+
+      return package;
+    }
+
     public static bool IsStandardKReference(string package)
     {
       return _standardKReferences.Contains(package);

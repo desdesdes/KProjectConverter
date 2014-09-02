@@ -85,7 +85,7 @@ namespace KProjectConverter
         {
           if (!FrameworkReferenceResolver.IsStandardKReference(reference))
           {
-            netDependencies.Add(new JProperty(reference, ""));
+            netDependencies.Add(new JProperty(FrameworkReferenceResolver.GetFrameworkReferenceCorrectCase(reference), ""));
           }
         }
         else
