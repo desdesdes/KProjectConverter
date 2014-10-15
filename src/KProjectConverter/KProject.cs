@@ -105,10 +105,7 @@ namespace KProjectConverter
       }
 
       projectJson.Add(new JProperty("dependencies", new JObject(generalDependencies)));
-
-      // Build the project.json version specifier from csproj version specifier, example "v4.5.1" to "net451"
-      var version = _project.Info.Version.Replace(".", "").Replace("v", "net");
-      projectJson.Add(new JProperty("frameworks", new JObject(new JProperty(version, new JObject(new JProperty("dependencies", new JObject(netDependencies)))))));
+      projectJson.Add(new JProperty("frameworks", new JObject(new JProperty("aspnet50", new JObject(new JProperty("dependencies", new JObject(netDependencies)))))));
 
       var projectPath = Path.Combine(Path.GetDirectoryName(_project.ProjectFilePath), "project.json");
       File.WriteAllText(projectPath, projectJson.ToString());
