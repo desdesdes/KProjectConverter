@@ -18,7 +18,10 @@ namespace KProjectConverter
       var jsonPaths = new JArray();
       foreach (var subDir in projectSubDir)
       {
-        jsonPaths.Add(subDir);
+        if (!string.IsNullOrEmpty(subDir))
+        {
+          jsonPaths.Add(subDir);
+        }
       }
 
       if(!string.IsNullOrEmpty(addSources))

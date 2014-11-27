@@ -62,8 +62,6 @@ namespace KProjectConverter
 
     public void BuildProjectJson(IEnumerable<KDependency> additionalDependencies)
     {
-      var projectJson = new JObject();
-
       var packageSet = new HashSet<string>();
       var generalDependencies = new List<JProperty>();
 
@@ -95,7 +93,7 @@ namespace KProjectConverter
 
           if (_projectReferences.Contains(projectName))
           {
-            generalDependencies.Add(new JProperty(reference, ""));
+            generalDependencies.Add(new JProperty(reference, "1.0.0-*"));
           }
           else if (!packageSet.Contains(projectName))
           {
@@ -104,8 +102,10 @@ namespace KProjectConverter
         }
       }
 
+      var projectJson = new JObject();
+      projectJson.Add(new JProperty("version", "1.0.0-*"));
       projectJson.Add(new JProperty("dependencies", new JObject(generalDependencies)));
-      projectJson.Add(new JProperty("frameworks", new JObject(new JProperty("aspnet50", new JObject(new JProperty("dependencies", new JObject(netDependencies)))))));
+      projectJson.Add(new JProperty("frameworks", new JObject(new JProperty("aspnet50", new JObject(new JProperty("frameworkAssemblies", new JObject(netDependencies)))))));
 
       var projectPath = Path.Combine(Path.GetDirectoryName(_project.ProjectFilePath), "project.json");
       File.WriteAllText(projectPath, projectJson.ToString());
